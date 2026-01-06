@@ -9,6 +9,7 @@ import '../widgets/time_slider.dart';
 import 'add_timezone_screen.dart';
 import 'edit_list_screen.dart';
 import 'settings_screen.dart';
+import '../widgets/glass_bottom_sheet.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -120,74 +121,54 @@ class _HomeScreenState extends State<HomeScreen> {
               "Daylight",
               style: TextStyle(
                 fontSize: 30,
-                fontWeight: FontWeight.w900, // Black weight
+                fontWeight: FontWeight.w900,
                 color: theme.headerText,
               ),
             ),
             const Spacer(),
-            PopupMenuButton<String>(
-               icon: Container(
-                 width: 48, height: 48,
+            IconButton(
+              icon: Icon(Icons.add, color: theme.headerText, size: 28),
+              onPressed: () {
+                showModalBottomSheet(
+                  context: context,
+                  isScrollControlled: true,
+                  backgroundColor: Colors.transparent,
+                  barrierColor: Colors.black.withOpacity(0.5),
+                  builder: (context) => GlassBottomSheet(
+                    title: "Add Timezone",
+                    actionText: "Done",
+                    onAction: () => Navigator.pop(context),
+                    child: const AddTimeZoneScreen(),
+                  ),
+                );
+              },
+            ),
+            const SizedBox(width: 8),
+             GestureDetector(
+               onTap: () {
+                 showModalBottomSheet(
+                   context: context,
+                   isScrollControlled: true,
+                   backgroundColor: Colors.transparent,
+                   barrierColor: Colors.black.withOpacity(0.5),
+                   builder: (context) => GlassBottomSheet(
+                     title: "Settings",
+                     actionText: "Done",
+                     onAction: () => Navigator.pop(context),
+                     child: const SettingsScreen(),
+                   ),
+                 );
+               },
+               child: Container(
+                 width: 36, height: 36,
                  decoration: BoxDecoration(
                    shape: BoxShape.circle,
-                   color: theme.background == Colors.black ? Colors.white.withOpacity(0.08) : Colors.black.withOpacity(0.08),
-                   border: Border.all(color: Colors.white.withOpacity(0.1)),
-                   boxShadow: [
-                     BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 8, offset: const Offset(0, 4))
-                   ],
+                   color: Colors.transparent,
+                   border: Border.all(color: theme.headerText.withOpacity(0.3), width: 2),
                  ),
-                 // Using a simple icon for brand since we don't have the image asset
-                 child: Icon(Icons.wb_sunny_outlined, color: theme.headerText, size: 24),
+                 child: Icon(Icons.settings, color: theme.headerText, size: 20),
                ),
-               onSelected: (value) {
-                 if (value == 'Add') {
-                    showModalBottomSheet(
-                      context: context, 
-                      isScrollControlled: true,
-                      useSafeArea: true,
-                      builder: (c) => const AddTimeZoneScreen()
-                    );
-                 } else if (value == 'Edit') {
-                    showModalBottomSheet(
-                      context: context,
-                      isScrollControlled: true,
-                      useSafeArea: true,
-                      builder: (c) => const EditListScreen()
-                    );
-                 } else if (value == 'Settings') {
-                    showModalBottomSheet(
-                      context: context,
-                      isScrollControlled: true, // Full screen effect often used for settings
-                      useSafeArea: true,
-                      builder: (c) => const SettingsScreen()
-                    );
-                 }
-               },
-               itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
-                 const PopupMenuItem<String>(
-                   value: 'Add',
-                   child: ListTile(
-                     leading: Icon(Icons.add),
-                     title: Text('Add Timezone'),
-                   ),
-                 ),
-                 const PopupMenuItem<String>(
-                   value: 'Edit',
-                   child: ListTile(
-                     leading: Icon(Icons.edit),
-                     title: Text('Edit List'),
-                   ),
-                 ),
-                 const PopupMenuDivider(),
-                 const PopupMenuItem<String>(
-                   value: 'Settings',
-                   child: ListTile(
-                     leading: Icon(Icons.settings),
-                     title: Text('Settings'),
-                   ),
-                 ),
-               ],
-            ),
+             ),
           ],
         ),
       ),

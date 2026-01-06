@@ -1,4 +1,5 @@
 import 'dart:math';
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../models/timezone_item.dart';
@@ -46,162 +47,186 @@ class _TimeSliderState extends State<TimeSlider> {
 
   @override
   Widget build(BuildContext context) {
+    // These constants define the inner layout
     const trackPadding = 25.5;
     const knobWidth = 38.0;
     
-    return LayoutBuilder(builder: (context, constraints) {
-      final sliderWidth = constraints.maxWidth;
-      final trackWidth = sliderWidth - (trackPadding * 2);
-      final centerX = trackWidth / 2;
-      final pixelsPerHour = trackWidth / 24.0;
-      final knobX = centerX + (widget.hourOffset * pixelsPerHour);
+    // We wrap everything in a glass container with padding around it
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 40), // Float off the bottom
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(44), // Large rounded pill shape
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+          child: Container(
+            height: 140, // Reduced height for the contained look
+            decoration: BoxDecoration(
+              color: Colors.black.withOpacity(0.65), // Dark semi-transparent
+              borderRadius: BorderRadius.circular(44),
+              border: Border.all(
+                color: Colors.white.withOpacity(0.12),
+                width: 1,
+              ),
+            ),
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: LayoutBuilder(builder: (context, constraints) {
+              final sliderWidth = constraints.maxWidth;
+              final trackWidth = sliderWidth - (trackPadding * 2);
+              final centerX = trackWidth / 2;
+              final pixelsPerHour = trackWidth / 24.0;
+              final knobX = centerX + (widget.hourOffset * pixelsPerHour);
 
-      return GestureDetector(
-        onDoubleTap: () {
-             widget.onHourOffsetChanged(0);
-        },
-        child: Container(
-          height: 161,
-          padding: const EdgeInsets.symmetric(horizontal: 12),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-               // Label
-               Row(
-                 mainAxisAlignment: MainAxisAlignment.center,
-                 children: [
-                   Text(
-                     (widget.hourOffset.abs() < 0.01) ? "Now" : formatTimeLabel(),
-                     style: const TextStyle(
-                       fontSize: 18,
-                       fontWeight: FontWeight.w900,
-                       color: Color(0xFFFF9900), // Gradient text difficult in Flutter simple Text, using solid color for this step
+              return GestureDetector(
+                onDoubleTap: () {
+                     widget.onHourOffsetChanged(0);
+                },
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                     // Label ("Now" or "+Xh")
+                     Row(
+                       mainAxisAlignment: MainAxisAlignment.center,
+                       children: [
+                         Text(
+                           (widget.hourOffset.abs() < 0.01) ? "Now" : "${widget.hourOffset > 0 ? '+' : ''}${widget.hourOffset.round()}h",
+                           style: const TextStyle(
+                             fontSize: 17,
+                             fontWeight: FontWeight.w700,
+                             color: Color(0xFFFFCC00), // Brighter yellow matching image
+                           ),
+                         ),
+                         if (widget.hourOffset.abs() >= 0.01)
+                           Padding(
+                             padding: const EdgeInsets.only(left: 8.0),
+                             child: GestureDetector(
+                               onTap: () => widget.onHourOffsetChanged(0),
+                               child: Icon(Icons.cancel, color: Colors.white.withOpacity(0.5), size: 16),
+                             ),
+                           )
+                       ],
                      ),
-                   ),
-                   if (widget.hourOffset.abs() >= 0.01)
-                     Padding(
-                       padding: const EdgeInsets.only(left: 8.0),
-                       child: GestureDetector(
-                         onTap: () => widget.onHourOffsetChanged(0),
-                         child: Icon(Icons.cancel, color: widget.theme.closeButton, size: 16),
+                     const SizedBox(height: 12),
+                     
+                     // Track
+                     SizedBox(
+                       width: trackWidth,
+                       height: 24,
+                       child: Stack(
+                         alignment: Alignment.centerLeft,
+                         clipBehavior: Clip.none,
+                         children: [
+                           CustomPaint(
+                             size: Size(trackWidth, 6),
+                             painter: SliderTrackPainter(
+                               currentHour: currentHomeHour,
+                               pixelsPerHour: pixelsPerHour,
+                               centerX: centerX,
+                               trackWidth: trackWidth,
+                               theme: widget.theme,
+                             ),
+                           ),
+                           Positioned(
+                             left: knobX - (knobWidth / 2),
+                             top: -9,
+                             child: GestureDetector(
+                               onHorizontalDragStart: (details) {
+                                 setState(() {
+                                   isDragging = true;
+                                   dragStartOffset = widget.hourOffset;
+                                 });
+                               },
+                               onHorizontalDragUpdate: (details) {
+                                   final dragHours = details.primaryDelta! / pixelsPerHour;
+                                   
+                                   double newOffset = widget.hourOffset + dragHours;
+                                   newOffset = newOffset.clamp(-12.0, 12.0);
+                                   
+                                   // Keep continuous for smooth drag, snap on release or for haptics only?
+                                   // User probably wants smooth visual, but haptic feedback.
+                                   // For now, let's keep continuous updates with haptic snapping.
+                                   
+                                    // Snap logic for HAPTICS only, visual is fluid? 
+                                    // Actually original code snapped the value.
+                                    // Let's stick to snap for now as it makes reading easier.
+                                   final currentMinuteFraction = DateTime.now().minute / 60.0;
+                                   final targetTime = currentMinuteFraction + newOffset;
+                                   final snappedTarget = (targetTime * 4).round() / 4.0;
+                                   final snappedOffset = snappedTarget - currentMinuteFraction;
+                                   
+                                   // Haptic
+                                   final currentInterval = (snappedOffset * 4).round();
+                                   if (currentInterval != lastHapticHour) {
+                                     HapticFeedback.selectionClick();
+                                     lastHapticHour = currentInterval;
+                                   }
+                                   
+                                   widget.onHourOffsetChanged(snappedOffset);
+                               },
+                               onHorizontalDragEnd: (details) {
+                                 setState(() {
+                                   isDragging = false;
+                                 });
+                               },
+                               child: _buildKnob(),
+                             )
+                           )
+                         ],
                        ),
-                     )
-                 ],
-               ),
-               const SizedBox(height: 8),
-               
-               // Track
-               SizedBox(
-                 width: trackWidth,
-                 height: 24,
-                 child: Stack(
-                   alignment: Alignment.centerLeft,
-                   clipBehavior: Clip.none,
-                   children: [
-                     CustomPaint(
-                       size: Size(trackWidth, 6),
-                       painter: SliderTrackPainter(
-                         currentHour: currentHomeHour,
-                         pixelsPerHour: pixelsPerHour,
-                         centerX: centerX,
-                         trackWidth: trackWidth,
-                         theme: widget.theme,
+                     ),
+                     
+                     // Ticks
+                     const SizedBox(height: 12),
+                     SizedBox(
+                       width: trackWidth,
+                       height: 4,
+                       child: CustomPaint(
+                          painter: TickPainter(trackWidth: trackWidth, knobX: knobX, theme: widget.theme),
                        ),
                      ),
-                     Positioned(
-                       left: knobX - (knobWidth / 2),
-                       top: -9, // (24 - 6)/2 = 9? No 24 height. Knob height 24. Track height 6. (24-6)/2 = 9.
-                       child: GestureDetector(
-                         onHorizontalDragStart: (details) {
-                           setState(() {
-                             isDragging = true;
-                             dragStartOffset = widget.hourOffset;
-                           });
-                         },
-                         onHorizontalDragUpdate: (details) {
-                             final dragHours = details.primaryDelta! / pixelsPerHour;
-                             // We accumulate change
-                             // Actually better to use local position difference?
-                             // But widget.hourOffset is state from parent.
-                             // Let's implement relative drag.
-                             
-                             double newOffset = widget.hourOffset + dragHours;
-                             newOffset = newOffset.clamp(-12.0, 12.0);
-                             
-                             // Snap logic
-                             final currentMinuteFraction = DateTime.now().minute / 60.0;
-                             final targetTime = currentMinuteFraction + newOffset;
-                             final snappedTarget = (targetTime * 4).round() / 4.0;
-                             final snappedOffset = snappedTarget - currentMinuteFraction;
-                             
-                             // Haptic
-                             final currentInterval = (snappedOffset * 4).round();
-                             if (currentInterval != lastHapticHour) {
-                               HapticFeedback.selectionClick();
-                               lastHapticHour = currentInterval;
-                             }
-                             
-                             widget.onHourOffsetChanged(snappedOffset);
-                         },
-                         onHorizontalDragEnd: (details) {
-                           setState(() {
-                             isDragging = false;
-                           });
-                         },
-                         child: _buildKnob(),
-                       )
-                     )
-                   ],
-                 ),
-               ),
-               
-               // Ticks
-               const SizedBox(height: 8),
-               SizedBox(
-                 width: trackWidth,
-                 height: 4,
-                 child: CustomPaint(
-                    painter: TickPainter(trackWidth: trackWidth, knobX: knobX, theme: widget.theme),
-                 ),
-               ),
-               
-               // Current Time
-               const SizedBox(height: 8),
-               if (widget.homeTimeZone != null)
-                 Row(
-                   mainAxisAlignment: MainAxisAlignment.center,
-                   children: [
-                     Icon(Icons.navigation, size: 14, color: widget.theme.sliderText),
-                     const SizedBox(width: 4),
-                     Text(
-                       widget.homeTimeZone!.formattedTime(offsetBy: 0),
-                       style: TextStyle(fontSize: 18, fontWeight: FontWeight.w300, color: widget.theme.sliderText),
-                     ),
-                   ],
-                 ),
-                const SizedBox(height: 16),
-            ],
+                     
+                     // Current Time below
+                     const SizedBox(height: 12),
+                     if (widget.homeTimeZone != null)
+                       Row(
+                         mainAxisAlignment: MainAxisAlignment.center,
+                         children: [
+                           Icon(Icons.navigation, size: 14, color: Colors.white.withOpacity(0.7)),
+                           const SizedBox(width: 4),
+                           Text(
+                             widget.homeTimeZone!.formattedTime(offsetBy: widget.hourOffset),
+                             style: TextStyle(
+                               fontSize: 15, 
+                               fontWeight: FontWeight.w400, 
+                               color: Colors.white.withOpacity(0.9), // Bright white for legibility on glass
+                               fontFamily: 'Inter',
+                             ),
+                           ),
+                         ],
+                       ),
+                  ],
+                ),
+              );
+            }),
           ),
         ),
-      );
-    });
+      ),
+    );
   }
 
   Widget _buildKnob() {
      return Container(
-       width: 38,
+       width: 40,
        height: 24,
        decoration: BoxDecoration(
-         color: isDragging ? Colors.white.withOpacity(0.6) : Colors.white,
+         color: Colors.white,
          borderRadius: BorderRadius.circular(12),
          boxShadow: [
            BoxShadow(
-             color: isDragging ? const Color(0xFFFF9900).withOpacity(0.4) : Colors.black.withOpacity(0.12),
-             blurRadius: isDragging ? 8 : 6.5,
-             offset: Offset(0, isDragging ? 0 : 3),
+             color: Colors.black.withOpacity(0.2),
+             blurRadius: 4,
+             offset: const Offset(0, 2),
            )
          ],
-         border: Border.all(color: Colors.white.withOpacity(0.8), width: 1),
        ),
      );
   }
@@ -224,21 +249,21 @@ class SliderTrackPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    // Center the track vertically
-    final trackY = (size.height - 6) / 2;
-    final trackRect = Rect.fromLTWH(0, trackY, trackWidth, 6);
-    final trackRRect = RRect.fromRectAndRadius(trackRect, const Radius.circular(3));
+    final trackY = (size.height - 4) / 2; // Thinner track
+    final trackRect = Rect.fromLTWH(0, trackY, trackWidth, 4);
+    final trackRRect = RRect.fromRectAndRadius(trackRect, const Radius.circular(2));
     
-    // Draw Night Background
-    final nightPaint = Paint()..color = theme.nightBlock;
-    canvas.drawRRect(trackRRect, nightPaint);
+    // Draw Background Track (Dark Grey)
+    final bgPaint = Paint()..color = Colors.white.withOpacity(0.1);
+    canvas.drawRRect(trackRRect, bgPaint);
 
-    // Calculate Segments
+    // Calculate Segments for Daylight
     final segments = _calculateDaySegments();
     
     final dayPaint = Paint()
-      ..shader = const LinearGradient(colors: [ThemeColors.daylightStart, ThemeColors.daylightEnd])
-          .createShader(trackRect);
+      ..shader = const LinearGradient(
+        colors: [Color(0xFFFFD900), Color(0xFFFF9900)] // Strong Yellow/Orange
+      ).createShader(trackRect);
           
     for (final segment in segments) {
        final startX = max(0.0, segment.startX);
@@ -246,14 +271,10 @@ class SliderTrackPainter extends CustomPainter {
        final width = endX - startX;
        
        if (width > 0) {
-         final dayRect = Rect.fromLTWH(startX, trackY, width, 6);
+         final dayRect = Rect.fromLTWH(startX, trackY, width, 4);
          
-         // Corner radii
-         // If startX <= 0, left corners rounded
-         // If endX >= trackWidth, right corners rounded
-         // Else flat
-         final leftRadius = startX <= 0 ? const Radius.circular(3) : Radius.zero;
-         final rightRadius = endX >= trackWidth ? const Radius.circular(3) : Radius.zero;
+         final leftRadius = startX <= 0 ? const Radius.circular(2) : Radius.zero;
+         final rightRadius = endX >= trackWidth ? const Radius.circular(2) : Radius.zero;
          
          final dayRRect = RRect.fromRectAndCorners(
            dayRect,
@@ -313,12 +334,15 @@ class TickPainter extends CustomPainter {
        final isAtKnob = (tickX - knobX).abs() < (trackWidth / (totalTicks - 1) / 2);
        
        final paint = Paint()
-         ..color = isAtKnob ? const Color(0xFFFF9900) : theme.tickMark
+         ..color = isAtKnob 
+             ? const Color(0xFFFFCC00) // Active tick yellow
+             : Colors.white.withOpacity(0.3) // Inactive white dim
          ..style = PaintingStyle.fill;
          
-       if (!isAtKnob && !isMajor) paint.color = paint.color.withOpacity(0.5);
+       // User requested "dots"
+       final radius = isMajor ? 2.5 : 1.5;
        
-       canvas.drawCircle(Offset(tickX, size.height / 2), isMajor ? 2 : 2, paint);
+       canvas.drawCircle(Offset(tickX, size.height / 2), radius, paint);
     } 
   }
 
