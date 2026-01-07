@@ -69,7 +69,7 @@ class _HomeScreenState extends State<HomeScreen> {
                // List
                Expanded(
                  child: ListView.builder(
-                   padding: const EdgeInsets.fromLTRB(16, 16, 16, 180), // Bottom padding for slider
+                   padding: EdgeInsets.fromLTRB(16, 16, 16, 220 + MediaQuery.of(context).padding.bottom), // Bottom padding for slider + safe area
                    itemCount: sortedTimeZones.length,
                    itemBuilder: (context, index) {
                      final tzItem = sortedTimeZones[index];

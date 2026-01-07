@@ -52,8 +52,9 @@ class _TimeSliderState extends State<TimeSlider> {
     const knobWidth = 38.0;
     
     // We wrap everything in a glass container with padding around it
+    final bottomPadding = MediaQuery.of(context).padding.bottom;
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 0, 16, 40), // Float off the bottom
+      padding: EdgeInsets.fromLTRB(16, 0, 16, 20 + bottomPadding), // Float off the bottom respecting safe area
       child: ClipRRect(
         borderRadius: BorderRadius.circular(44), // Large rounded pill shape
         child: BackdropFilter(

@@ -4,6 +4,7 @@ import 'package:timezone/data/latest.dart' as tz;
 import 'utils/app_settings.dart';
 import 'models/timezone_store.dart';
 import 'screens/home_screen.dart';
+import 'screens/splash_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -46,7 +47,7 @@ class DaylightApp extends StatelessWidget {
         scaffoldBackgroundColor: Colors.black,
         fontFamily: 'Inter',
       ),
-      home: const HomeScreen(),
+      home: const SplashScreen(),
     );
   }
 }

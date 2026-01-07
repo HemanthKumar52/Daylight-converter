@@ -90,6 +90,7 @@ class _AddTimeZoneScreenState extends State<AddTimeZoneScreen> {
           ),
           Expanded(
             child: ListView.separated(
+              padding: EdgeInsets.only(bottom: MediaQuery.of(context).padding.bottom + 20),
               itemCount: filteredTimeZones.length,
               separatorBuilder: (c, i) => Divider(height: 1, color: Colors.grey.withOpacity(0.2), indent: 16),
               itemBuilder: (context, index) {
