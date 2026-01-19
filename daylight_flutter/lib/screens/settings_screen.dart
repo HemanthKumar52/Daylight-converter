@@ -28,9 +28,13 @@ class SettingsScreen extends StatelessWidget {
                onTap: () {
                  // Simple cycle for now or show dialog? Cycle is easiest.
                  ThemeMode nextMode;
-                 if (settings.themeMode == ThemeMode.system) nextMode = ThemeMode.light;
-                 else if (settings.themeMode == ThemeMode.light) nextMode = ThemeMode.dark;
-                 else nextMode = ThemeMode.system;
+                 if (settings.themeMode == ThemeMode.system) {
+                   nextMode = ThemeMode.light;
+                 } else if (settings.themeMode == ThemeMode.light) {
+                   nextMode = ThemeMode.dark;
+                 } else {
+                   nextMode = ThemeMode.system;
+                 }
                  settings.themeMode = nextMode;
                },
                child: Row(
@@ -39,12 +43,12 @@ class SettingsScreen extends StatelessWidget {
                    Text(
                      settings.themeMode == ThemeMode.system ? "System" : (settings.themeMode == ThemeMode.light ? "Light" : "Dark"),
                      style: TextStyle(
-                       color: isDark ? Colors.white.withOpacity(0.6) : Colors.black.withOpacity(0.6),
+                       color: isDark ? Colors.white.withValues(alpha: 0.6) : Colors.black.withValues(alpha: 0.6),
                        fontSize: 17,
                      ),
                    ),
                    const SizedBox(width: 4),
-                   Icon(Icons.unfold_more, color: isDark ? Colors.white.withOpacity(0.6) : Colors.black.withOpacity(0.6), size: 16),
+                   Icon(Icons.unfold_more, color: isDark ? Colors.white.withValues(alpha: 0.6) : Colors.black.withValues(alpha: 0.6), size: 16),
                  ],
                ),
             ),
@@ -92,7 +96,7 @@ class SettingsScreen extends StatelessWidget {
             onChanged: (bool value) {
               settings.showCenterLine = value;
             },
-            activeColor: Colors.white,
+            activeThumbColor: Colors.white,
             activeTrackColor: Colors.green, // iOS Green
             inactiveThumbColor: Colors.white,
             inactiveTrackColor: isDark ? Colors.grey.shade700 : Colors.grey.shade300,

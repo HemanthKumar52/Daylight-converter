@@ -1,11 +1,10 @@
 import 'dart:math';
 import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:provider/provider.dart';
 import '../models/timezone_item.dart';
 import '../utils/theme_colors.dart';
-import '../utils/app_settings.dart';
+
+
 import 'package:timezone/timezone.dart' as tz;
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
@@ -63,7 +62,7 @@ class _TimeSliderState extends State<TimeSlider> {
     // We wrap everything in a glass container with padding around it
      final isDark = Theme.of(context).brightness == Brightness.dark;
      final bottomPadding = MediaQuery.of(context).padding.bottom;
-     final settings = Provider.of<AppSettings>(context);
+
     
     return Padding(
       padding: EdgeInsets.fromLTRB(16, 0, 16, 20 + bottomPadding), // Float off the bottom respecting safe area
@@ -74,10 +73,10 @@ class _TimeSliderState extends State<TimeSlider> {
           child: Container(
             height: 140, // Reduced height for the contained look
             decoration: BoxDecoration(
-              color: isDark ? Colors.black.withOpacity(0.5) : Colors.white.withOpacity(0.4),
+              color: isDark ? Colors.black.withValues(alpha: 0.5) : Colors.white.withValues(alpha: 0.4),
               borderRadius: BorderRadius.circular(44),
               border: Border.all(
-                color: isDark ? Colors.white.withOpacity(0.12) : Colors.black.withOpacity(0.05),
+                color: isDark ? Colors.white.withValues(alpha: 0.12) : Colors.black.withValues(alpha: 0.05),
                 width: 1,
               ),
             ),
@@ -105,7 +104,7 @@ class _TimeSliderState extends State<TimeSlider> {
                            style: const TextStyle(
                              fontSize: 17,
                              fontWeight: FontWeight.w700,
-                             color: const Color(0xFFFFCC00), // Brighter yellow matching image
+                             color: Color(0xFFFFCC00), // Brighter yellow matching image
                            ),
                          ),
                        ],
@@ -204,7 +203,7 @@ class _TimeSliderState extends State<TimeSlider> {
                              height: 14,
                              width: 14,
                               colorFilter: ColorFilter.mode(
-                                  isDark ? Colors.white.withOpacity(0.7) : Colors.black.withOpacity(0.6), 
+                                  isDark ? Colors.white.withValues(alpha: 0.7) : Colors.black.withValues(alpha: 0.6), 
                                   BlendMode.srcIn
                               ),
                            ),
@@ -214,7 +213,7 @@ class _TimeSliderState extends State<TimeSlider> {
                               style: GoogleFonts.outfit(
                                 fontSize: 15, 
                                 fontWeight: FontWeight.w400, 
-                                color: isDark ? Colors.white.withOpacity(0.9) : Colors.black.withOpacity(0.9),
+                                color: isDark ? Colors.white.withValues(alpha: 0.9) : Colors.black.withValues(alpha: 0.9),
                               ),
                             ),
                          ],
@@ -238,9 +237,9 @@ class _TimeSliderState extends State<TimeSlider> {
          borderRadius: BorderRadius.circular(12),
          boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.2),
+              color: Colors.black.withValues(alpha: 0.2),
               blurRadius: 4,
-              offset: const Offset(0, 2),
+              offset: Offset(0, 2),
             )
          ],
        ),
@@ -273,7 +272,7 @@ class SliderTrackPainter extends CustomPainter {
     final trackRRect = RRect.fromRectAndRadius(trackRect, const Radius.circular(2));
     
     // Draw Background Track (Dark Grey)
-    final bgPaint = Paint()..color = isDark ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.1);
+    final bgPaint = Paint()..color = isDark ? Colors.white.withValues(alpha: 0.1) : Colors.black.withValues(alpha: 0.1);
     canvas.drawRRect(trackRRect, bgPaint);
 
     // Calculate Segments for Daylight
@@ -356,7 +355,7 @@ class TickPainter extends CustomPainter {
        final paint = Paint()
          ..color = isAtKnob 
              ? const Color(0xFFFFCC00) // Active tick yellow
-             : (isDark ? Colors.white.withOpacity(0.3) : Colors.black.withOpacity(0.2)) // Inactive dim
+             : (isDark ? Colors.white.withValues(alpha: 0.3) : Colors.black.withValues(alpha: 0.2)) // Inactive dim
          ..style = PaintingStyle.fill;
          
        // User requested "dots"

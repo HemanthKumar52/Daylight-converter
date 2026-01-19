@@ -30,13 +30,13 @@ class GlassBottomSheet extends StatelessWidget {
           child: Container(
           decoration: BoxDecoration(
             color: Theme.of(context).brightness == Brightness.dark 
-                ? Colors.black.withOpacity(0.5) 
-                : Colors.white.withOpacity(0.4),
+                ? Colors.black.withValues(alpha: 0.5) 
+                : Colors.white.withValues(alpha: 0.4),
             borderRadius: BorderRadius.circular(32),
             border: Border.all(
               color: Theme.of(context).brightness == Brightness.dark
-                  ? Colors.white.withOpacity(0.12)
-                  : Colors.black.withOpacity(0.05),
+                  ? Colors.white.withValues(alpha: 0.12)
+                  : Colors.black.withValues(alpha: 0.05),
               width: 1,
             ),
           ),
@@ -50,8 +50,8 @@ class GlassBottomSheet extends StatelessWidget {
                 height: 5,
                 decoration: BoxDecoration(
                   color: Theme.of(context).brightness == Brightness.dark 
-                      ? Colors.white.withOpacity(0.3) 
-                      : Colors.black.withOpacity(0.2),
+                      ? Colors.white.withValues(alpha: 0.3) 
+                      : Colors.black.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(2.5),
                 ),
               ),
@@ -106,8 +106,8 @@ class GlassBottomSheet extends StatelessWidget {
               Divider(
                   height: 1, 
                   color: Theme.of(context).brightness == Brightness.dark 
-                      ? Colors.white.withOpacity(0.1) 
-                      : Colors.black.withOpacity(0.1)
+                      ? Colors.white.withValues(alpha: 0.1) 
+                      : Colors.black.withValues(alpha: 0.1)
               ),
               
               // Content

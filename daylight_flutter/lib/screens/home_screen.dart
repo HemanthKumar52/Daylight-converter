@@ -7,8 +7,7 @@ import '../utils/app_settings.dart';
 import '../utils/theme_colors.dart';
 import '../widgets/timezone_card.dart';
 import '../widgets/time_slider.dart';
-import 'add_timezone_screen.dart';
-import 'edit_list_screen.dart';
+
 import 'settings_screen.dart';
 import '../widgets/glass_bottom_sheet.dart';
 
@@ -142,7 +141,7 @@ class _HomeScreenState extends State<HomeScreen> {
                    context: context,
                    isScrollControlled: true,
                    backgroundColor: Colors.transparent,
-                   barrierColor: Colors.black.withOpacity(0.5),
+                   barrierColor: Colors.black.withValues(alpha: 0.5),
                    builder: (context) => GlassBottomSheet(
                      title: "Settings",
                      actionText: "Done",
@@ -152,7 +151,7 @@ class _HomeScreenState extends State<HomeScreen> {
                    ),
                  );
                },
-               child: Container(
+               child: SizedBox(
                  width: 36, height: 36,
                  child: SvgPicture.asset(
                    "assets/images/brand.svg",

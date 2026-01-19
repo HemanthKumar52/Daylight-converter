@@ -1,0 +1,5 @@
+﻿Analyzing daylight_flutter...                                   
+
+warning - Unused import: 'package:provider/provider.dart' - lib\widgets\time_slider.dart:5:8 - unused_import
+warning - Unused import: '../utils/app_settings.dart' - lib\widgets\time_slider.dart:8:8 - unused_import
+

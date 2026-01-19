@@ -73,7 +73,7 @@ class _AddTimeZoneScreenState extends State<AddTimeZoneScreen> {
             itemCount: filteredTimeZones.length,
             separatorBuilder: (c, i) => Divider(
               height: 1, 
-              color: isDark ? Colors.grey.withOpacity(0.2) : Colors.black.withOpacity(0.1), 
+              color: isDark ? Colors.grey.withValues(alpha: 0.2) : Colors.black.withValues(alpha: 0.1), 
               indent: 16
             ),
             itemBuilder: (context, index) {
@@ -111,8 +111,8 @@ class _AddTimeZoneScreenState extends State<AddTimeZoneScreen> {
               cursorColor: const Color(0xFFFF9900),
               decoration: InputDecoration(
                 hintText: "Search cities",
-                hintStyle: TextStyle(color: isDark ? Colors.white.withOpacity(0.5) : Colors.black.withOpacity(0.4)),
-                prefixIcon: Icon(Icons.search, color: isDark ? Colors.white.withOpacity(0.5) : Colors.black.withOpacity(0.4)),
+                hintStyle: TextStyle(color: isDark ? Colors.white.withValues(alpha: 0.5) : Colors.black.withValues(alpha: 0.4)),
+                prefixIcon: Icon(Icons.search, color: isDark ? Colors.white.withValues(alpha: 0.5) : Colors.black.withValues(alpha: 0.4)),
                 filled: true,
                 fillColor: isDark ? const Color(0xFF2C2C2E) : Colors.grey.shade200, 
                 border: OutlineInputBorder(
