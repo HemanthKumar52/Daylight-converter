@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
@@ -49,7 +48,7 @@ class TimeZoneCard extends StatelessWidget {
   String? get offsetFromHomeText {
     if (homeTimeZone == null || isHomeTimezone) return null;
 
-
+    // Actual now used to be here, but unused logic removed
     final homeOffset = tz.TZDateTime.now(homeTimeZone!.location).timeZoneOffset.inMinutes;
     final thisOffset = tz.TZDateTime.now(timeZone.location).timeZoneOffset.inMinutes;
     
@@ -303,6 +302,11 @@ class TimeZoneCardPainter extends CustomPainter {
         colors: [ThemeColors.daylightStart, ThemeColors.daylightEnd],
       ).createShader(Rect.fromLTWH(0, 0, size.width, size.height)); // Gradient depends on position? Swift uses local rect.
 
+    final borderPaint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1
+      ..color = theme.headerText.withValues(alpha: 0.1); 
+
     for (int day = 0; day < 7; day++) {
       final dayBlockX = offsetX + day * (blockWidth * 2 + blockSpacing * 2);
       final nightBlockX = dayBlockX + blockWidth + blockSpacing;
@@ -318,12 +322,20 @@ class TimeZoneCardPainter extends CustomPainter {
         RRect.fromRectAndRadius(dayRect, const Radius.circular(5)),
         dayPaint,
       );
+      canvas.drawRRect(
+        RRect.fromRectAndRadius(dayRect, const Radius.circular(5)),
+        borderPaint,
+      );
 
       // Draw Night Block
       final nightRect = Rect.fromLTWH(nightBlockX, 0, blockWidth, size.height);
       canvas.drawRRect(
         RRect.fromRectAndRadius(nightRect, const Radius.circular(5)),
         nightPaint,
+      );
+      canvas.drawRRect(
+        RRect.fromRectAndRadius(nightRect, const Radius.circular(5)),
+        borderPaint,
       );
     }
   }

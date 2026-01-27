@@ -61,7 +61,6 @@ class AvailableTimeZone {
         AvailableTimeZone(identifier: "America/New_York", cityName: "New York", abbreviation: "EST"),
         AvailableTimeZone(identifier: "America/New_York", cityName: "Miami", abbreviation: "EST"),
         AvailableTimeZone(identifier: "America/New_York", cityName: "Boston", abbreviation: "EST"),
-        AvailableTimeZone(identifier: "America/New_York", cityName: "Columbus", abbreviation: "EST"),
         AvailableTimeZone(identifier: "America/Chicago", cityName: "Chicago", abbreviation: "CST"),
         AvailableTimeZone(identifier: "America/Chicago", cityName: "Houston", abbreviation: "CST"),
         AvailableTimeZone(identifier: "America/Denver", cityName: "Denver", abbreviation: "MST"),

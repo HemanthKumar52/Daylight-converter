@@ -5,7 +5,6 @@ class AppSettings extends ChangeNotifier {
   static const String _prefShowCenterLine = 'showCenterLine';
   static const String _prefThemeMode = 'themeMode';
 
-
   late SharedPreferences _prefs;
   bool _isInitialized = false;
 

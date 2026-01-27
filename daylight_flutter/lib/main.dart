@@ -3,18 +3,31 @@ import 'package:provider/provider.dart';
 import 'package:timezone/data/latest.dart' as tz;
 import 'utils/app_settings.dart';
 import 'models/timezone_store.dart';
-
 import 'screens/splash_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  tz.initializeTimeZones(); // Initialize timezone database
-  
-  final store = TimeZoneStore();
-  await store.init();
 
+  final store = TimeZoneStore();
   final settings = AppSettings();
-  await settings.init();
+
+  try {
+    tz.initializeTimeZones(); // Initialize timezone database
+  } catch (e) {
+    // silently fail
+  }
+    
+  try {
+    await store.init();
+  } catch (e) {
+    // silently fail
+  }
+
+  try {
+    await settings.init();
+  } catch (e) {
+    // silently fail
+  }
 
   runApp(
     MultiProvider(
@@ -42,14 +55,33 @@ class DaylightApp extends StatelessWidget {
         useMaterial3: true,
         brightness: Brightness.light,
         scaffoldBackgroundColor: Colors.white,
-        fontFamily: 'Inter', // Assuming Inter or system
+        fontFamily: 'Outfit', 
       ),
       darkTheme: ThemeData(
         useMaterial3: true,
         brightness: Brightness.dark,
         scaffoldBackgroundColor: Colors.black,
-        fontFamily: 'Inter',
+        fontFamily: 'Outfit',
       ),
+      builder: (context, widget) {
+        ErrorWidget.builder = (FlutterErrorDetails errorDetails) {
+          return Scaffold(
+            body: Center(
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: SingleChildScrollView(
+                  child: Text(
+                    "Error:\n${errorDetails.exception}",
+                    style: const TextStyle(color: Colors.red, fontSize: 16),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ),
+            ),
+          );
+        };
+        return widget!;
+      },
       home: const SplashScreen(),
     );
   }

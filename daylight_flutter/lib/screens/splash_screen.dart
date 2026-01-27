@@ -1,5 +1,4 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
 import '../utils/theme_colors.dart';
 import 'home_screen.dart';
@@ -15,8 +14,8 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    // Navigate to Home after 5 seconds
-    Timer(const Duration(seconds: 5), () {
+    // Navigate to Home after 1 second
+    Timer(const Duration(seconds: 1), () {
       if (mounted) {
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(builder: (context) => const HomeScreen()),
@@ -86,7 +85,7 @@ class _SplashScreenState extends State<SplashScreen> {
                     children: [
                       // "Reverse K" symbol
                       Text(
-                        ">|", 
+                        "", 
                         style: TextStyle(
                           color: isDark ? Colors.white : Colors.black, 
                           fontSize: 20, 
