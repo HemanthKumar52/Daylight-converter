@@ -222,7 +222,7 @@ class _HomeScreenState extends State<HomeScreen> {
                    color: theme.headerText.withValues(alpha: 0.1),
                    shape: BoxShape.circle,
                    border: Border.all(
-                     color: Theme.of(context).brightness == Brightness.dark ? Colors.white.withValues(alpha: 0.2) : Colors.black.withValues(alpha: 0.1),
+                     color: Theme.of(context).brightness == Brightness.dark ? Colors.white.withValues(alpha: 0.4) : Colors.black.withValues(alpha: 0.4),
                      width: 1,
                    ),
                  ),

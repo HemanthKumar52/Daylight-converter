@@ -75,7 +75,7 @@ class _TimeSliderState extends State<TimeSlider> {
               color: isDark ? Colors.black.withValues(alpha: 0.5) : Colors.white.withValues(alpha: 0.4),
               borderRadius: BorderRadius.circular(64),
               border: Border.all(
-                color: isDark ? Colors.white.withValues(alpha: 0.4) : Colors.black.withValues(alpha: 0.2),
+                color: isDark ? Colors.white.withValues(alpha: 0.4) : Colors.black.withValues(alpha: 0.4),
                 width: 1,
               ),
             ),

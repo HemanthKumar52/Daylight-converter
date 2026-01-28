@@ -45,7 +45,7 @@ class GlassMenu extends StatelessWidget {
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(
                       // Kept refined border
-                      color: isDark ? Colors.white.withValues(alpha: 0.4) : Colors.black.withValues(alpha: 0.2),
+                      color: isDark ? Colors.white.withValues(alpha: 0.4) : Colors.black.withValues(alpha: 0.4),
                       width: 1.0,
                     ),
                     boxShadow: [

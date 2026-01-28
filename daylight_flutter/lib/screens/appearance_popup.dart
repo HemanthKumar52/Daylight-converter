@@ -101,7 +101,7 @@ class _AppearancePopupState extends State<AppearancePopup> with SingleTickerProv
                         color: isDark ? const Color(0xFF1C1C1E).withValues(alpha: 0.8) : const Color(0xFFF2F2F7).withValues(alpha: 0.85),
                         borderRadius: BorderRadius.circular(20),
                         border: Border.all(
-                          color: isDark ? Colors.white.withValues(alpha: 0.1) : Colors.black.withValues(alpha: 0.05),
+                          color: isDark ? Colors.white.withValues(alpha: 0.4) : Colors.black.withValues(alpha: 0.4),
                         ),
                         boxShadow: [
                           BoxShadow(

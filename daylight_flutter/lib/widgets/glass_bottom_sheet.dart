@@ -64,7 +64,7 @@ class GlassBottomSheet extends StatelessWidget {
                         alpha: 0.4,
                       ) // Stronger white for Dark Mode
                     : Colors.black.withValues(
-                        alpha: 0.2,
+                        alpha: 0.4,
                       ), // Stronger black for Light Mode
                 width: 1.0, // Thicker border
               ),
