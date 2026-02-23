@@ -7,6 +7,7 @@ import '../models/timezone_store.dart';
 import '../models/timezone_item.dart';
 import '../utils/app_settings.dart';
 import '../utils/theme_colors.dart';
+import '../utils/responsive.dart';
 import '../widgets/timezone_card.dart';
 import '../widgets/time_slider.dart';
 import 'add_timezone_screen.dart';
@@ -25,6 +26,12 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   double hourOffset = 0;
   late Timer _updateTimer;
+
+  Color _getBackgroundColor(int theme) {
+    final brightness = theme == 0 ? Brightness.light : Brightness.dark;
+    final themeColors = ThemeColors(brightness);
+    return themeColors.background;
+  }
 
   TimeZoneItem? get homeTimeZone {
     final store = Provider.of<TimeZoneStore>(context, listen: false);
@@ -72,11 +79,16 @@ class _HomeScreenState extends State<HomeScreen> {
     debugPrint("Debug: HomeScreen building...");
     final settings = Provider.of<AppSettings>(context);
     // Determine brightness based on settings
-    final brightness = settings.themeMode == ThemeMode.dark ? Brightness.dark : 
+    final brightness = settings.themeMode == ThemeMode.dark ? Brightness.dark :
                        (settings.themeMode == ThemeMode.light ? Brightness.light : MediaQuery.of(context).platformBrightness);
-                       
+
     final theme = ThemeColors(brightness);
     debugPrint("Debug: Theme brightness: $brightness, Background: ${theme.background}");
+
+    final isLargeScreen = Responsive.isTabletOrLarger(context);
+    final horizontalPadding = Responsive.getHorizontalPadding(context);
+    final columns = Responsive.getGridColumns(context);
+    final sliderHeight = Responsive.getSliderHeight(context);
 
     return Scaffold(
       backgroundColor: theme.background,
@@ -89,42 +101,31 @@ class _HomeScreenState extends State<HomeScreen> {
               children: [
                 _buildHeader(theme, context),
                 Expanded(
-                  child: ListView.builder(
-                    padding: EdgeInsets.fromLTRB(16, 16, 16, 220 + MediaQuery.of(context).padding.bottom),
-                    itemCount: sortedTimeZones.length,
-                    itemBuilder: (context, index) {
-                      final tzItem = sortedTimeZones[index];
-                      return Padding(
-                        padding: const EdgeInsets.only(bottom: 2),
-                        child: TimeZoneCard(
-                          timeZone: tzItem,
-                          hourOffset: hourOffset,
-                          homeTimeZone: homeTimeZone,
-                          showCenterLine: settings.showCenterLine,
-                          theme: theme,
-                        ),
-                      );
-                    },
-                  ),
+                  child: _buildListView(settings, theme, horizontalPadding, sliderHeight),
                 ),
               ],
             ),
           ),
-          
+
           // Slider Layer
           Positioned(
             bottom: 0,
             left: 0,
             right: 0,
-            child: TimeSlider(
-              hourOffset: hourOffset,
-              onHourOffsetChanged: (val) {
-                setState(() {
-                  hourOffset = val;
-                });
-              },
-              homeTimeZone: homeTimeZone,
-              theme: theme,
+            child: Center(
+              child: ConstrainedBox(
+                constraints: BoxConstraints(maxWidth: Responsive.maxSliderWidth),
+                child: TimeSlider(
+                  hourOffset: hourOffset,
+                  onHourOffsetChanged: (val) {
+                    setState(() {
+                      hourOffset = val;
+                    });
+                  },
+                  homeTimeZone: homeTimeZone,
+                  theme: theme,
+                ),
+              ),
             ),
           ),
         ],
@@ -132,22 +133,60 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  Widget _buildListView(AppSettings settings, ThemeColors theme, double horizontalPadding, double sliderHeight) {
+    return Center(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: Responsive.maxContentWidth),
+        child: ListView.builder(
+          padding: EdgeInsets.fromLTRB(
+            horizontalPadding,
+            16,
+            horizontalPadding,
+            sliderHeight + 92 + MediaQuery.of(context).padding.bottom
+          ),
+          itemCount: sortedTimeZones.length,
+          itemBuilder: (context, index) {
+            final tzItem = sortedTimeZones[index];
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: TimeZoneCard(
+                timeZone: tzItem,
+                hourOffset: hourOffset,
+                homeTimeZone: homeTimeZone,
+                showCenterLine: settings.showCenterLine,
+                theme: theme,
+              ),
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+
+
   Widget _buildHeader(ThemeColors theme, BuildContext context) {
+    final horizontalPadding = Responsive.getHorizontalPadding(context);
+    final headerFontSize = Responsive.getHeaderFontSize(context);
+
     return SafeArea(
       bottom: false,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 11),
-        child: Row(
-          children: [
-            Text(
-              "Daylight",
-              style: GoogleFonts.outfit(
-                fontSize: 36,
-                fontWeight: FontWeight.w900,
-                color: theme.headerText,
-              ),
-            ),
-            const Spacer(),
+      child: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: Responsive.maxContentWidth),
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: horizontalPadding, vertical: 11),
+            child: Row(
+              children: [
+                Text(
+                  "Daylight",
+                  style: GoogleFonts.outfit(
+                    fontSize: headerFontSize,
+                    fontWeight: FontWeight.w900,
+                    color: theme.headerText,
+                  ),
+                ),
+                const Spacer(),
 
              const SizedBox(width: 8),
               BouncingButton(
@@ -228,24 +267,34 @@ class _HomeScreenState extends State<HomeScreen> {
                    ),
                  );
                },
-               child: Container(
-                 width: 52, height: 52, 
-                 decoration: BoxDecoration(
-                   color: theme.headerText.withValues(alpha: 0.1),
-                   shape: BoxShape.circle,
-                   border: Border.all(
-                     color: Theme.of(context).brightness == Brightness.dark ? Colors.white.withValues(alpha: 0.4) : Colors.black.withValues(alpha: 0.4),
-                     width: 1,
-                   ),
-                 ),
-                 padding: const EdgeInsets.all(10), 
-                 child: SvgPicture.asset(
-                   "assets/images/brand.svg",
-                   colorFilter: ColorFilter.mode(theme.headerText, BlendMode.srcIn),
-                 ),
+               child: Builder(
+                 builder: (context) {
+                   final isLargeScreen = Responsive.isTabletOrLarger(context);
+                   final buttonSize = isLargeScreen ? 60.0 : 52.0;
+                   final iconPadding = isLargeScreen ? 12.0 : 10.0;
+                   return Container(
+                     width: buttonSize,
+                     height: buttonSize,
+                     decoration: BoxDecoration(
+                       color: theme.headerText.withValues(alpha: 0.1),
+                       shape: BoxShape.circle,
+                       border: Border.all(
+                         color: Theme.of(context).brightness == Brightness.dark ? Colors.white.withValues(alpha: 0.4) : Colors.black.withValues(alpha: 0.4),
+                         width: 1,
+                       ),
+                     ),
+                     padding: EdgeInsets.all(iconPadding),
+                     child: SvgPicture.asset(
+                       "assets/images/brand.svg",
+                       colorFilter: ColorFilter.mode(theme.headerText, BlendMode.srcIn),
+                     ),
+                   );
+                 },
                ),
              ),
-          ],
+              ],
+            ),
+          ),
         ),
       ),
     );

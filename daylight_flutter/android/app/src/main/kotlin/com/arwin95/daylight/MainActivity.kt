@@ -1,4 +1,4 @@
-package com.example.daylight_flutter
+package com.arwin95.daylight
 
 import io.flutter.embedding.android.FlutterActivity
 

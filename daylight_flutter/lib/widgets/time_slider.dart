@@ -4,6 +4,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import '../models/timezone_item.dart';
 import '../utils/theme_colors.dart';
+import '../utils/responsive.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
@@ -72,18 +73,20 @@ class _TimeSliderState extends State<TimeSlider> {
      final isDark = Theme.of(context).brightness == Brightness.dark;
      final bottomPadding = MediaQuery.of(context).padding.bottom;
      final containerDecoration = _buildContainerDecoration(isDark);
-     // settings variable removed as it was unused
-    
+     final sliderHeight = Responsive.getSliderHeight(context);
+     final horizontalPadding = Responsive.isTabletOrLarger(context) ? 32.0 : 24.0;
+     final isLargeScreen = Responsive.isTabletOrLarger(context);
+
     return Padding(
-      padding: EdgeInsets.fromLTRB(24, 0, 24, 20 + bottomPadding), // Increased side padding for floating look
+      padding: EdgeInsets.fromLTRB(horizontalPadding, 0, horizontalPadding, 20 + bottomPadding),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(64), // Full rounded pill shape (Height 128 / 2 = 64)
+        borderRadius: BorderRadius.circular(sliderHeight / 2),
         child: BackdropFilter(
           filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
           child: Container(
-            height: 128, // Compact height for pill look
+            height: sliderHeight,
             decoration: containerDecoration,
-            padding: const EdgeInsets.symmetric(horizontal: 16),
+            padding: EdgeInsets.symmetric(horizontal: isLargeScreen ? 24 : 16),
             child: LayoutBuilder(builder: (context, constraints) {
               final sliderWidth = constraints.maxWidth;
               final trackWidth = sliderWidth - (trackPadding * 2);
@@ -96,14 +99,14 @@ class _TimeSliderState extends State<TimeSlider> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                     _buildSliderLabels(),
-                     const SizedBox(height: 12),
-                     
+                     _buildSliderLabels(context),
+                     SizedBox(height: isLargeScreen ? 14 : 12),
+
                      // Track
                      _buildSliderTrack(trackWidth, knobX, pixelsPerHour, isDark),
-                     
+
                      // Ticks
-                     const SizedBox(height: 12),
+                     SizedBox(height: isLargeScreen ? 14 : 12),
                      SizedBox(
                        width: trackWidth,
                        height: 4,
@@ -111,11 +114,11 @@ class _TimeSliderState extends State<TimeSlider> {
                           painter: TickPainter(trackWidth: trackWidth, knobX: knobX, theme: widget.theme, isDark: isDark),
                        ),
                      ),
-                     
+
                      // Current Time below
-                     const SizedBox(height: 12),
+                     SizedBox(height: isLargeScreen ? 14 : 12),
                      if (widget.homeTimeZone != null)
-                       _buildHomeTimeLabel(isDark),
+                       _buildHomeTimeLabel(isDark, context),
                   ],
                 ),
               );
@@ -127,9 +130,10 @@ class _TimeSliderState extends State<TimeSlider> {
   }
 
   BoxDecoration _buildContainerDecoration(bool isDark) {
+    final sliderHeight = Responsive.getSliderHeight(context);
     return BoxDecoration(
       color: isDark ? Colors.black.withValues(alpha: 0.5) : Colors.white.withValues(alpha: 0.4),
-      borderRadius: BorderRadius.circular(64),
+      borderRadius: BorderRadius.circular(sliderHeight / 2),
       border: Border.all(
         color: isDark ? Colors.white.withValues(alpha: 0.4) : Colors.black.withValues(alpha: 0.4),
         width: 1,
@@ -137,7 +141,11 @@ class _TimeSliderState extends State<TimeSlider> {
     );
   }
 
-  Widget _buildSliderLabels() {
+  Widget _buildSliderLabels(BuildContext context) {
+    final isLargeScreen = Responsive.isTabletOrLarger(context);
+    final fontSize = isLargeScreen ? 19.0 : 17.0;
+    final buttonSize = isLargeScreen ? 24.0 : 20.0;
+
     return Row(
        mainAxisAlignment: MainAxisAlignment.center,
        children: [
@@ -150,9 +158,9 @@ class _TimeSliderState extends State<TimeSlider> {
             child: Text(
               (widget.hourOffset.abs() < 0.01) ? "Now" : formatTimeLabel(),
               style: GoogleFonts.outfit(
-                fontSize: 17,
+                fontSize: fontSize,
                 fontWeight: FontWeight.w700,
-                color: Colors.white, // Required for ShaderMask
+                color: Colors.white,
               ),
             ),
           ),
@@ -161,13 +169,13 @@ class _TimeSliderState extends State<TimeSlider> {
            GestureDetector(
              onTap: () => widget.onHourOffsetChanged(0),
              child: Container(
-               width: 20, 
-               height: 20,
-               decoration: const BoxDecoration( // iOS System Grey
+               width: buttonSize,
+               height: buttonSize,
+               decoration: const BoxDecoration(
                  color: Color(0xFF8E8E93),
                  shape: BoxShape.circle,
                ),
-               child: const Icon(Icons.close, size: 14, color: Colors.white),
+               child: Icon(Icons.close, size: buttonSize * 0.7, color: Colors.white),
              ),
            ),
          ],
@@ -241,25 +249,29 @@ class _TimeSliderState extends State<TimeSlider> {
      );
   }
 
-  Widget _buildHomeTimeLabel(bool isDark) {
+  Widget _buildHomeTimeLabel(bool isDark, BuildContext context) {
+      final isLargeScreen = Responsive.isTabletOrLarger(context);
+      final fontSize = isLargeScreen ? 17.0 : 15.0;
+      final iconSize = isLargeScreen ? 16.0 : 14.0;
+
       return Row(
          mainAxisAlignment: MainAxisAlignment.center,
          children: [
            SvgPicture.asset(
              "assets/images/navigation.svg",
-             height: 14,
-             width: 14,
+             height: iconSize,
+             width: iconSize,
                colorFilter: ColorFilter.mode(
-                   isDark ? Colors.white.withValues(alpha: 0.7) : Colors.black.withValues(alpha: 0.6), 
+                   isDark ? Colors.white.withValues(alpha: 0.7) : Colors.black.withValues(alpha: 0.6),
                    BlendMode.srcIn
                ),
            ),
            const SizedBox(width: 4),
             Text(
-              widget.homeTimeZone!.formattedTime(), // Removed offsetBy to keep it constant
+              widget.homeTimeZone!.formattedTime(),
               style: GoogleFonts.outfit(
-                fontSize: 15, 
-                fontWeight: FontWeight.w400, 
+                fontSize: fontSize,
+                fontWeight: FontWeight.w400,
                 color: isDark ? Colors.white.withValues(alpha: 0.9) : Colors.black.withValues(alpha: 0.9),
               ),
             ),

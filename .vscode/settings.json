@@ -1,3 +1,7 @@
 {
-    "coderabbit.selfHostedUrl": ""
+    "coderabbit.selfHostedUrl": "",
+    "sonarlint.connectedMode.project": {
+        "connectionId": "hemanthkumar52",
+        "projectKey": "hemanthkumar52_Daylight-converter"
+    }
 }

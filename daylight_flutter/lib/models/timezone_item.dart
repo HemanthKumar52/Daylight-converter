@@ -37,6 +37,7 @@ class TimeZoneItem {
     };
   }
   
+  // ignore: deprecated_member_use_from_same_package
   static final RegExp _offsetRegex = RegExp(r'^[\+\-]\d');
 
   // Dynamic abbreviation handling DST (EST/EDT)

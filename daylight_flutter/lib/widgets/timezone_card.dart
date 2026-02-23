@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import '../models/timezone_item.dart';
 import '../utils/theme_colors.dart';
+import '../utils/responsive.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:flutter_svg/flutter_svg.dart';
 
@@ -110,16 +111,16 @@ class TimeZoneCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const cardHeight = 108.0;
-    const blockWidth = 190.0;
-    const blockSpacing = 2.0;
+    final cardHeight = Responsive.getCardHeight(context);
+    final blockWidth = Responsive.getBlockWidth(context);
+    const blockSpacing = 0.0;
 
     return SizedBox(
       height: cardHeight,
       child: LayoutBuilder(
         builder: (context, constraints) {
           final cardWidth = constraints.maxWidth;
-          final offsetX = calculateOffsetX(cardWidth);
+          final offsetX = _calculateOffsetXWithBlockWidth(cardWidth, blockWidth);
 
           return Stack(
             children: [
@@ -135,7 +136,7 @@ class TimeZoneCard extends StatelessWidget {
                   size: Size(cardWidth, cardHeight),
                 ),
               ),
-              
+
               // Overlay Text Labels (Only when at center)
               // We simulate the infinite list by rendering just 7 days centered loosely around the current one
               // but shifting them with the offset.
@@ -159,8 +160,8 @@ class TimeZoneCard extends StatelessWidget {
                           width: blockWidth,
                           height: cardHeight,
                           child: Center(
-                            child: isBlockAtCenter(day, true, offsetX, cardWidth)
-                                ? _buildTimeLabel(true)
+                            child: _isBlockAtCenterWithBlockWidth(day, true, offsetX, cardWidth, blockWidth)
+                                ? _buildTimeLabel(true, context)
                                 : const SizedBox(),
                           ),
                         ),
@@ -171,8 +172,8 @@ class TimeZoneCard extends StatelessWidget {
                           width: blockWidth,
                           height: cardHeight,
                           child: Center(
-                            child: isBlockAtCenter(day, false, offsetX, cardWidth)
-                                ? _buildTimeLabel(false)
+                            child: _isBlockAtCenterWithBlockWidth(day, false, offsetX, cardWidth, blockWidth)
+                                ? _buildTimeLabel(false, context)
                                 : const SizedBox(),
                           ),
                         ),
@@ -198,8 +199,34 @@ class TimeZoneCard extends StatelessWidget {
     );
   }
 
-  Widget _buildTimeLabel(bool isDaylight) {
+  double _calculateOffsetXWithBlockWidth(double cardWidth, double blockWidth) {
+    const blockSpacing = 0.0;
+    double normalizedTime = (currentTimeHours - 6 + 24) % 24;
+    final middleDayStart = (blockWidth + blockSpacing) * 6;
+    double posInCurrentBlock = (normalizedTime / 12.0) * blockWidth;
+    double currentPosInTimeline = middleDayStart + posInCurrentBlock;
+    return (cardWidth / 2) - currentPosInTimeline;
+  }
+
+  bool _isBlockAtCenterWithBlockWidth(int dayIndex, bool isDayBlock, double offsetX, double cardWidth, double blockWidth) {
+    const blockSpacing = 0.0;
+    final pairWidth = blockWidth * 2 + blockSpacing * 2;
+    double blockStartX = offsetX + dayIndex * pairWidth;
+    if (!isDayBlock) {
+      blockStartX += blockWidth + blockSpacing;
+    }
+    double blockEndX = blockStartX + blockWidth;
+    double centerX = cardWidth / 2;
+    return blockStartX <= centerX && centerX <= blockEndX;
+  }
+
+  Widget _buildTimeLabel(bool isDaylight, BuildContext context) {
     final textColor = isDaylight ? const Color(0xFFBE3C00) : theme.nightText;
+    final isLargeScreen = Responsive.isTabletOrLarger(context);
+    final primaryFontSize = isLargeScreen ? 20.0 : 18.0;
+    final secondaryFontSize = isLargeScreen ? 16.0 : 14.0;
+    final iconSize = isLargeScreen ? 18.0 : 16.0;
+    final moonIconSize = isLargeScreen ? 16.0 : 14.0;
 
     return FittedBox(
       fit: BoxFit.scaleDown,
@@ -209,31 +236,31 @@ class TimeZoneCard extends StatelessWidget {
           isDaylight
               ? SvgPicture.asset(
                   "assets/images/sun.svg",
-                  height: 16,
-                  width: 16,
+                  height: iconSize,
+                  width: iconSize,
                   colorFilter: ColorFilter.mode(textColor, BlendMode.srcIn),
                 )
               : SvgPicture.asset(
                   "assets/images/moon.svg",
-                  height: 14, // Moon is usually slightly smaller visually in SF Symbols
-                  width: 14,
+                  height: moonIconSize,
+                  width: moonIconSize,
                   colorFilter: ColorFilter.mode(textColor, BlendMode.srcIn),
                 ),
           const SizedBox(height: 3),
           Text(
             timeZone.formattedTime(offsetBy: hourOffset),
-            style: GoogleFonts.outfit(
+             style: GoogleFonts.outfit(
               color: textColor,
-              fontSize: 18,
+              fontSize: primaryFontSize,
               fontWeight: FontWeight.w500,
             ),
           ),
-          const SizedBox(height: 2), // Slight spacing
+          const SizedBox(height: 2),
           Text(
             "${timeZone.cityName} (${timeZone.abbreviation})",
             style: GoogleFonts.outfit(
               color: textColor,
-              fontSize: 18,
+              fontSize: primaryFontSize,
               fontWeight: FontWeight.w300,
             ),
           ),
@@ -246,8 +273,8 @@ class TimeZoneCard extends StatelessWidget {
                   padding: const EdgeInsets.only(right: 3),
                   child: SvgPicture.asset(
                     "assets/images/navigation.svg",
-                    height: 12,
-                    width: 12,
+                    height: secondaryFontSize - 2,
+                    width: secondaryFontSize - 2,
                     colorFilter: ColorFilter.mode(textColor, BlendMode.srcIn),
                   ),
                 )
@@ -258,7 +285,7 @@ class TimeZoneCard extends StatelessWidget {
                     "${offsetFromHomeText!},",
                     style: GoogleFonts.outfit(
                       color: textColor,
-                      fontSize: 14,
+                      fontSize: secondaryFontSize,
                       fontWeight: FontWeight.w300,
                     ),
                   ),
@@ -267,7 +294,7 @@ class TimeZoneCard extends StatelessWidget {
                 formattedDayDate,
                 style: GoogleFonts.outfit(
                   color: textColor,
-                  fontSize: 14,
+                  fontSize: secondaryFontSize,
                   fontWeight: FontWeight.w300,
                 ),
               ),
@@ -300,7 +327,7 @@ class TimeZoneCardPainter extends CustomPainter {
     final dayPaint = Paint()
       ..shader = const LinearGradient(
         colors: [ThemeColors.daylightStart, ThemeColors.daylightEnd],
-      ).createShader(Rect.fromLTWH(0, 0, size.width, size.height)); // Gradient depends on position? Swift uses local rect.
+      ).createShader(Rect.fromLTWH(0, 0, size.width, size.height));
 
     final borderPaint = Paint()
       ..style = PaintingStyle.stroke
@@ -313,30 +340,17 @@ class TimeZoneCardPainter extends CustomPainter {
 
       // Draw Day Block
       final dayRect = Rect.fromLTWH(dayBlockX, 0, blockWidth, size.height);
-      // Re-create shader for specific rect to match Swift logic (local gradient)
       dayPaint.shader = const LinearGradient(
         colors: [ThemeColors.daylightStart, ThemeColors.daylightEnd],
       ).createShader(dayRect);
       
-      canvas.drawRRect(
-        RRect.fromRectAndRadius(dayRect, const Radius.circular(5)),
-        dayPaint,
-      );
-      canvas.drawRRect(
-        RRect.fromRectAndRadius(dayRect, const Radius.circular(5)),
-        borderPaint,
-      );
+      canvas.drawRect(dayRect, dayPaint);
+      // canvas.drawRect(dayRect, borderPaint); // Removed border to reduce clutter for continuous look
 
       // Draw Night Block
       final nightRect = Rect.fromLTWH(nightBlockX, 0, blockWidth, size.height);
-      canvas.drawRRect(
-        RRect.fromRectAndRadius(nightRect, const Radius.circular(5)),
-        nightPaint,
-      );
-      canvas.drawRRect(
-        RRect.fromRectAndRadius(nightRect, const Radius.circular(5)),
-        borderPaint,
-      );
+      canvas.drawRect(nightRect, nightPaint);
+      // canvas.drawRect(nightRect, borderPaint); // Removed border
     }
   }
 

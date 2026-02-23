@@ -6,6 +6,7 @@ import 'package:vibration/vibration.dart';
 import '../models/timezone_store.dart';
 import '../models/timezone_item.dart';
 import '../models/available_timezones.dart';
+import '../utils/responsive.dart';
 
 
 
@@ -63,6 +64,13 @@ class _AddTimeZoneScreenState extends State<AddTimeZoneScreen> {
   Widget build(BuildContext context) {
     final store = Provider.of<TimeZoneStore>(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final isLargeScreen = Responsive.isTabletOrLarger(context);
+
+    final horizontalPadding = isLargeScreen ? 24.0 : 16.0;
+    final searchHeight = isLargeScreen ? 44.0 : 36.0;
+    final titleFontSize = isLargeScreen ? 18.0 : 17.0;
+    final subtitleFontSize = isLargeScreen ? 14.0 : 13.0;
+    final iconSize = isLargeScreen ? 24.0 : 22.0;
 
     Widget? suffixIconWidget;
     if (searchText.isNotEmpty) {
@@ -76,7 +84,7 @@ class _AddTimeZoneScreenState extends State<AddTimeZoneScreen> {
         },
         child: Icon(
           CupertinoIcons.clear_circled_solid,
-          size: 18,
+          size: isLargeScreen ? 20 : 18,
           color: iconColor,
         ),
       );
@@ -86,19 +94,19 @@ class _AddTimeZoneScreenState extends State<AddTimeZoneScreen> {
       children: [
         // Search Bar at Top
         Padding(
-          padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+          padding: EdgeInsets.fromLTRB(horizontalPadding, 0, horizontalPadding, horizontalPadding),
           child: Container(
-            height: 36,
+            height: searchHeight,
             decoration: BoxDecoration(
-              color: isDark ? const Color(0xFF1C1C1E) : const Color(0x1F767680), // iOS Search Field Fill
-              borderRadius: BorderRadius.circular(10),
+              color: isDark ? const Color(0xFF1C1C1E) : const Color(0x1F767680),
+              borderRadius: BorderRadius.circular(isLargeScreen ? 12 : 10),
             ),
             child: TextField(
               controller: _searchController,
               textAlignVertical: TextAlignVertical.center,
               style: GoogleFonts.outfit(
                 color: isDark ? Colors.white : Colors.black,
-                fontSize: 17,
+                fontSize: titleFontSize,
               ),
               cursorColor: const Color(0xFFFF9900),
               decoration: InputDecoration(
@@ -106,13 +114,13 @@ class _AddTimeZoneScreenState extends State<AddTimeZoneScreen> {
                 contentPadding: EdgeInsets.zero,
                 prefixIcon: Icon(
                   CupertinoIcons.search,
-                  size: 20,
+                  size: isLargeScreen ? 22 : 20,
                   color: isDark ? Colors.grey.shade400 : Colors.grey.shade600,
                 ),
                 hintText: "Search cities",
                 hintStyle: GoogleFonts.outfit(
                   color: isDark ? Colors.grey.shade600 : Colors.grey.shade500,
-                  fontSize: 17,
+                  fontSize: titleFontSize,
                 ),
                 border: InputBorder.none,
                 suffixIcon: suffixIconWidget,
@@ -129,24 +137,24 @@ class _AddTimeZoneScreenState extends State<AddTimeZoneScreen> {
         // List (Expanded)
         Expanded(
           child: ListView.separated(
-            controller: widget.scrollController, 
-            padding: const EdgeInsets.symmetric(horizontal: 16), 
+            controller: widget.scrollController,
+            padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
             itemCount: filteredTimeZones.length,
             separatorBuilder: (c, i) => Divider(
-              height: 1, 
-              color: isDark ? Colors.white.withValues(alpha: 0.15) : Colors.black.withValues(alpha: 0.1), 
-              indent: 0 
+              height: 1,
+              color: isDark ? Colors.white.withValues(alpha: 0.15) : Colors.black.withValues(alpha: 0.1),
+              indent: 0
             ),
             itemBuilder: (context, index) {
               final tz = filteredTimeZones[index];
               final added = isAlreadyAdded(store, tz);
-              
+
               return InkWell(
                 onTap: () {
                    toggleTimeZone(context, tz);
                 },
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  padding: EdgeInsets.symmetric(vertical: isLargeScreen ? 14 : 12),
                   child: Row(
                     children: [
                        Expanded(
@@ -154,29 +162,29 @@ class _AddTimeZoneScreenState extends State<AddTimeZoneScreen> {
                            crossAxisAlignment: CrossAxisAlignment.start,
                            children: [
                              Text(
-                               tz.cityName, 
+                               tz.cityName,
                                style: GoogleFonts.outfit(
-                                 fontWeight: FontWeight.w600, 
-                                 fontSize: 17,
+                                 fontWeight: FontWeight.w600,
+                                 fontSize: titleFontSize,
                                  color: isDark ? Colors.white : Colors.black
                                )
                              ),
-                             const SizedBox(height: 2),
+                             SizedBox(height: isLargeScreen ? 4 : 2),
                              Text(
-                               tz.abbreviation, 
+                               tz.abbreviation,
                                style: GoogleFonts.outfit(
                                  color: isDark ? Colors.grey : Colors.grey.shade600,
-                                 fontSize: 13,
+                                 fontSize: subtitleFontSize,
                                )
                              ),
                            ],
                          ),
                        ),
                        if (added)
-                         const Icon(
-                           CupertinoIcons.checkmark_alt_circle_fill, 
-                           color: Color(0xFFFF9900), 
-                           size: 22,
+                         Icon(
+                           CupertinoIcons.checkmark_alt_circle_fill,
+                           color: const Color(0xFFFF9900),
+                           size: iconSize,
                          ),
                     ],
                   ),

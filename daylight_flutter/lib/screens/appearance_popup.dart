@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../utils/app_settings.dart';
+import '../utils/responsive.dart';
 
 class AppearancePopup extends StatefulWidget {
   final Rect triggerRect;
@@ -45,27 +46,13 @@ class _AppearancePopupState extends State<AppearancePopup> with SingleTickerProv
   Widget build(BuildContext context) {
     final settings = Provider.of<AppSettings>(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    
-    // Determine Y position: Try to center vertically on the trigger rect
-    // Trigger Rect is the "Appearance" row.
-    // Menu Height ~ approx 170 (3 items * 56 + dividers + padding)
-    // Let's assume height is fluid.
-    
-    // We want the popup to act like a context menu popping OUT of the row.
-    // Centering it horizontally on the trigger (or aligning edges).
-    // The "Appearance" row is wide. The menu is 250 wide.
-    // Let's center it horizontally on the screen for better aesthetics as per image 2 (which looks centered-ish or right aligned?).
-    // Actually image 2 shows it over the row. Let's Center horizontally relative to the row.
-    
-    const double menuWidth = 250.0;
+    final isLargeScreen = Responsive.isTabletOrLarger(context);
+
+    final double menuWidth = isLargeScreen ? 280.0 : 250.0;
     final rowCenter = widget.triggerRect.center;
     final leftPos = rowCenter.dx - (menuWidth / 2);
-    
-    // Vertical position: Center of the menu should approximately match center of the row, 
-    // unless it overflows.
-    // Let's align top to (row.top - some padding) to cover it or float above.
-    // Screenshot shows it floating OVER the existing content.
-    final topPos = widget.triggerRect.top - 60; // Shift up slightly to show context
+    final topPos = widget.triggerRect.top - (isLargeScreen ? 70 : 60);
+    final borderRadius = isLargeScreen ? 24.0 : 20.0;
 
     return Stack(
       children: [
@@ -80,7 +67,7 @@ class _AppearancePopupState extends State<AppearancePopup> with SingleTickerProv
             child: Container(color: Colors.transparent),
           ),
         ),
-        
+
         Positioned(
           top: topPos,
           left: leftPos,
@@ -92,14 +79,14 @@ class _AppearancePopupState extends State<AppearancePopup> with SingleTickerProv
               child: Material(
                 color: Colors.transparent,
                 child: ClipRRect(
-                  borderRadius: BorderRadius.circular(20),
+                  borderRadius: BorderRadius.circular(borderRadius),
                   child: BackdropFilter(
                     filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
                     child: Container(
                       width: menuWidth,
                       decoration: BoxDecoration(
                         color: isDark ? const Color(0xFF1C1C1E).withValues(alpha: 0.8) : const Color(0xFFF2F2F7).withValues(alpha: 0.85),
-                        borderRadius: BorderRadius.circular(20),
+                        borderRadius: BorderRadius.circular(borderRadius),
                         border: Border.all(
                           color: isDark ? Colors.white.withValues(alpha: 0.4) : Colors.black.withValues(alpha: 0.4),
                         ),
@@ -115,11 +102,11 @@ class _AppearancePopupState extends State<AppearancePopup> with SingleTickerProv
                         mainAxisSize: MainAxisSize.min,
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          _buildOption(context, settings, ThemeMode.system, "System", isDark, isFirst: true),
+                          _buildOption(context, settings, ThemeMode.system, "System", isDark, isLargeScreen, isFirst: true),
                           Divider(height: 1, thickness: 1, color: isDark ? Colors.grey.withValues(alpha: 0.2) : Colors.grey.withValues(alpha: 0.2)),
-                          _buildOption(context, settings, ThemeMode.light, "Light", isDark),
+                          _buildOption(context, settings, ThemeMode.light, "Light", isDark, isLargeScreen),
                           Divider(height: 1, thickness: 1, color: isDark ? Colors.grey.withValues(alpha: 0.2) : Colors.grey.withValues(alpha: 0.2)),
-                          _buildOption(context, settings, ThemeMode.dark, "Dark", isDark, isLast: true),
+                          _buildOption(context, settings, ThemeMode.dark, "Dark", isDark, isLargeScreen, isLast: true),
                         ],
                       ),
                     ),
@@ -133,9 +120,13 @@ class _AppearancePopupState extends State<AppearancePopup> with SingleTickerProv
     );
   }
 
-  Widget _buildOption(BuildContext context, AppSettings settings, ThemeMode mode, String label, bool isDark, {bool isFirst = false, bool isLast = false}) {
+  Widget _buildOption(BuildContext context, AppSettings settings, ThemeMode mode, String label, bool isDark, bool isLargeScreen, {bool isFirst = false, bool isLast = false}) {
     final isSelected = settings.themeMode == mode;
     final textColor = isDark ? Colors.white : Colors.black;
+    final borderRadius = isLargeScreen ? 24.0 : 20.0;
+    final fontSize = isLargeScreen ? 18.0 : 17.0;
+    final padding = isLargeScreen ? 18.0 : 16.0;
+    final iconSize = isLargeScreen ? 22.0 : 20.0;
 
     return InkWell(
       onTap: () async {
@@ -145,24 +136,24 @@ class _AppearancePopupState extends State<AppearancePopup> with SingleTickerProv
         if (context.mounted) Navigator.pop(context);
       },
       borderRadius: BorderRadius.vertical(
-        top: isFirst ? const Radius.circular(20) : Radius.zero,
-        bottom: isLast ? const Radius.circular(20) : Radius.zero,
+        top: isFirst ? Radius.circular(borderRadius) : Radius.zero,
+        bottom: isLast ? Radius.circular(borderRadius) : Radius.zero,
       ),
-      child: Container( 
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: padding, vertical: padding),
         child: Row(
           children: [
             SizedBox(
-              width: 24,
+              width: isLargeScreen ? 28 : 24,
               child: isSelected
-                  ? Icon(Icons.check, color: textColor, size: 20)
+                  ? Icon(Icons.check, color: textColor, size: iconSize)
                   : null,
             ),
-            const SizedBox(width: 12),
+            SizedBox(width: isLargeScreen ? 14 : 12),
             Text(
               label,
               style: GoogleFonts.outfit(
-                fontSize: 17,
+                fontSize: fontSize,
                 fontWeight: FontWeight.w400,
                 color: textColor,
               ),
